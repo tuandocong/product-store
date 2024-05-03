@@ -13,6 +13,8 @@ const reducerNavBar = (state = initStateNavbar, action) => {
       return { isActiveState: "shop" };
     case "CART_ACTIVE":
       return { isActiveState: "cart" };
+    case "HISTORY_ACTIVE":
+      return { isActiveState: "history" };
     case "LOGIN_ACTIVE":
       return { isActiveState: "login" };
     default:
@@ -23,6 +25,7 @@ const reducerNavBar = (state = initStateNavbar, action) => {
 const initStateHome = {
   showPopup: false,
   itemPopup: {
+    _id:"",
     name: "Nothing",
     price: 0,
     short_desc: "nothing",
@@ -60,30 +63,33 @@ const reducerShop = (state = initStateShop, action) => {
   }
 };
 
-//--------------reducer cho Login-----------
+//--------------reducer cho LOGIN-----------
 const initStateLogin = {
-  isLogin: false,
-  userLogin: {
-    name: "",
-    email: "",
-    password: "",
-    phone: "",
-  },
+  // isLogin: false,
+  user: localStorage.getItem("curUser")
+    ? JSON.parse(localStorage.getItem("curUser"))
+    : {},
+  token: localStorage.getItem("token")
+    ? JSON.parse(localStorage.getItem("token"))
+    : "",
 };
 const reducerLogin = (state = initStateLogin, action) => {
   switch (action.type) {
     case "ON_LOGIN":
-      // console.log("login", state);
       return {
         ...state,
-        isLogin: true,
-        userLogin: JSON.parse(localStorage.getItem("curUser")),
+        // isLogin: true,
+        user: JSON.parse(localStorage.getItem("curUser")),
+        token: JSON.parse(localStorage.getItem("token")),
       };
     case "ON_LOGOUT":
       return {
         ...state,
-        isLogin: false,
-        userLogin: JSON.parse(localStorage.getItem("curUser")),
+        user: {},
+        token: "",
+        // isLogin: false,
+        // user: JSON.parse(localStorage.getItem("curUser")),
+        // token: JSON.parse(localStorage.getItem("token")),
       };
     default:
       return state;
@@ -191,7 +197,7 @@ const reducerCart = (state = initStateCart, action) => {
   }
 };
 
-//--------------------------------reducer lay data tu LocalStorage:-----------------------
+//-------------------reducer lay data tu LocalStorage:-----------------------
 const innitStateLocal = {
   arrCart: [],
   totalCart: 0,
@@ -230,7 +236,7 @@ const reducerPopup = (state = innitStatePopup, action) => {
   }
 };
 
-//--------------------------------------------Root reducer-------------------------------------
+//--------------------------Root reducer---------------------------
 const rootReducer = combineReducers({
   mainNavbar: reducerNavBar,
   homePage: reducerHome,

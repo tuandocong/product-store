@@ -3,13 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FaUserAlt } from "react-icons/fa";
 import { FaShoppingCart } from "react-icons/fa";
+import { FaHistory } from "react-icons/fa";
 
 const Navbar = () => {
-  //--------- c1: lay du lieu tu redux
-  // const isLogin = useSelector((state) => state.loginPage.isLogin);
-  // const userLogin = useSelector((state) => state.loginPage.userLogin);
-
-  //--------- c2: lay du lieu tu localStorage
+  //---------  lay du lieu tu localStorage
   let isLogin = false; // trạng thái Login/out
   const userLogin = JSON.parse(localStorage.getItem("curUser"));
   if (
@@ -35,6 +32,10 @@ const Navbar = () => {
     dispatch({ type: "SHOP_ACTIVE" });
     navigate("/shop");
   };
+  const historyButtonHandler = () => {
+    dispatch({ type: "HISTORY_ACTIVE" });
+    navigate("/history");
+  };
   const cartButtonHandler = () => {
     dispatch({ type: "CART_ACTIVE" });
     navigate("/cart");
@@ -45,6 +46,10 @@ const Navbar = () => {
   };
   const logoutButtonHandler = () => {
     localStorage.setItem("curUser", JSON.stringify({}));
+    localStorage.setItem("token", JSON.stringify(""));
+    localStorage.setItem("totalCart", JSON.stringify(""));
+    localStorage.setItem("arrItemsCart", JSON.stringify([]));
+
     dispatch({ type: "ON_LOGOUT" });
     dispatch({ type: "LOGIN_ACTIVE" });
     navigate("/login");
@@ -59,22 +64,35 @@ const Navbar = () => {
         >
           Home
         </button>
-        <button
-          className={isActive === "shop" ? classes.active : ""}
-          onClick={shopButtonHandler}
-        >
-          Shop
-        </button>
+        {isLogin && (
+          <button
+            className={isActive === "shop" ? classes.active : ""}
+            onClick={shopButtonHandler}
+          >
+            Shop
+          </button>
+        )}
       </div>
       <div className={classes["text-header"]}>BOUTIQUE</div>
       <div>
-        <button
-          className={isActive === "cart" ? classes.active : ""}
-          onClick={cartButtonHandler}
-        >
-          <FaShoppingCart className={classes.icons} />
-          Cart
-        </button>
+        {isLogin && (
+          <button
+            className={isActive === "cart" ? classes.active : ""}
+            onClick={cartButtonHandler}
+          >
+            <FaShoppingCart className={classes.icons} />
+            Cart
+          </button>
+        )}
+        {isLogin && (
+          <button
+            className={isActive === "history" ? classes.active : ""}
+            onClick={historyButtonHandler}
+          >
+            <FaHistory className={classes.icons} />
+            History
+          </button>
+        )}
         {!isLogin && (
           <button
             className={isActive === "login" ? classes.active : ""}
@@ -86,10 +104,10 @@ const Navbar = () => {
         {isLogin && (
           <div className={classes.user}>
             <FaUserAlt className={classes.icons} />
-            {userLogin.name}
+            {userLogin.username}
           </div>
         )}
-        {isLogin && <button onClick={logoutButtonHandler}>(Logout)</button>}
+        {isLogin && <button onClick={logoutButtonHandler}>Logout</button>}
       </div>
     </div>
   );

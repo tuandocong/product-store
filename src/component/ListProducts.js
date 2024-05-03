@@ -10,6 +10,7 @@ const ListProducts = (props) => {
     dispatch({
       type: "CHANGE_POPUP",
       payload: {
+        _id: item._id,
         name: item.name,
         price: item.price,
         short_desc: item.short_desc,

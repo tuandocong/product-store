@@ -1,35 +1,34 @@
 import { useParams, useNavigate } from "react-router-dom";
 import classes from "./DetailPage.module.css";
 import ItemProduct from "../component/ItemProduct";
-import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useState } from "react";
 const DetailPage = (props) => {
   // console.log(props.data);
-
+  const token = useSelector((state) => state.loginPage.token);
   //lấy id từ useParams
   const { productId } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   // state chứa số lượng muốn thêm (default = 1)
   const [quantity, setQuantity] = useState(1);
 
   //lấy data của sản phẩm từ ID đã có:
   const dataProduct = props.data.filter((item) => {
-    return item["_id"]["$oid"] === productId;
+    return item["_id"] === productId;
   });
 
   //lấy các sản phẩm liên quan (có cùng categary):
   const relateList = props.data.filter((item) => {
     return (
       item.category === dataProduct[0].category &&
-      item["_id"]["$oid"] !== dataProduct[0]["_id"]["$oid"]
+      item["_id"] !== dataProduct[0]["_id"]
     );
   });
 
   //Chuyển trang tới detail/id của sản phẩm liên quan:
   const relateProductClick = (e) => {
-    navigate(`/detail/${e["_id"]["$oid"]}`);
+    navigate(`/detail/${e["_id"]}`);
   };
 
   // cập nhật số lượng sản phẳm muốn thêm:
@@ -39,19 +38,45 @@ const DetailPage = (props) => {
 
   // thêm vào Cart:
   const addItemBtnHandler = () => {
-    if (Number(quantity) !== 0) {
-      dispatch({
-        type: "ADD_CART",
-        payload: {
-          name: dataProduct[0].name,
-          id: productId,
-          img: dataProduct[0].img1,
-          price: dataProduct[0].price,
-          quantity: Number(quantity),
-        },
-      });
-      setQuantity("");
-    }
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", `Bearer ${token}`);
+
+    const raw = JSON.stringify({
+      productId: productId,
+      quantity: quantity,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+
+    fetch(`${process.env.REACT_APP_API_URL}/carts/add-cart`, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        if (!result.isSuccess) {
+          throw new Error(result.msg);
+        }
+        setQuantity(1);
+        alert("Add to cart successfully!");
+      })
+      .catch((error) => alert(error.message));
+    // if (Number(quantity) !== 0) {
+    //   dispatch({
+    //     type: "ADD_CART",
+    //     payload: {
+    //       name: dataProduct[0].name,
+    //       id: productId,
+    //       img: dataProduct[0].img1,
+    //       price: dataProduct[0].price,
+    //       quantity: Number(quantity),
+    //     },
+    //   });
+    //   setQuantity("");
+    // }
   };
 
   return (

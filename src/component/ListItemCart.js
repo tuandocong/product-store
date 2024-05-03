@@ -38,8 +38,8 @@ const ListItemCart = (props) => {
         </div>
       ) : (
         props.listCart.map((item) => (
-          <div className="row" key={item.id}>
-            <ItemCart data={item} />
+          <div className="row" key={item._id}>
+            <ItemCart data={item} reloadHandler={props.reloadHandler} />
           </div>
         ))
       )}

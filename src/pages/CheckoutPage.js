@@ -1,35 +1,29 @@
 import classes from "./CheckoutPage.module.css";
 import CheckoutOrder from "../component/CheckoutOrder";
 import { useState } from "react";
-// import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 //--------------------
 const CheckoutPage = () => {
-  // -----   lấy data từ Redux   -----
-  // const orderList = useSelector((state) => state.cartPage.arrItems);
-  // const total = useSelector((state) => state.cartPage.totalCart);
-
-  // -----   lấy data từ localStorage   -----
-  let orderList = localStorage.getItem("arrItems")
-    ? JSON.parse(localStorage.getItem("arrItems"))
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  // -----   lấy data USER từ store   -----
+  const token = useSelector((state) => state.loginPage.token);
+  const user = useSelector((state) => state.loginPage.user);
+  // -----   lấy data CART từ localStorage   -----
+  let orderList = localStorage.getItem("arrItemsCart")
+    ? JSON.parse(localStorage.getItem("arrItemsCart"))
     : [];
   let total = localStorage.getItem("totalCart")
     ? JSON.parse(localStorage.getItem("totalCart"))
     : 0;
 
   // state chứa giá trị cho các input:
-  const [nameInput, setNameInput] = useState("");
-  const [emailInput, setEmailInput] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [addressInput, setAddressInput] = useState("");
 
   //cập nhật giá trị input
-  const nameChange = (e) => {
-    setNameInput(e.target.value);
-  };
-  const emailChange = (e) => {
-    setEmailInput(e.target.value);
-  };
   const phoneChange = (e) => {
     setPhoneInput(e.target.value);
   };
@@ -40,12 +34,56 @@ const CheckoutPage = () => {
   //click Submit btn:
   const submitHandler = (e) => {
     e.preventDefault();
-    setNameInput("");
-    setEmailInput("");
-    setPhoneInput("");
-    setAddressInput("");
-    alert("Checkout Success !!!");
+
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", `Bearer ${token}`);
+
+    const raw = JSON.stringify({
+      phone: phoneInput,
+      address: addressInput,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+
+    fetch(`${process.env.REACT_APP_API_URL}/orders/add-order`, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        if (!result.isSuccess) {
+          throw new Error(result.msg);
+        }
+
+        //xoa cart trong local
+        localStorage.setItem("totalCart", JSON.stringify(""));
+        localStorage.setItem("arrItemsCart", JSON.stringify([]));
+
+        //reset input
+        setPhoneInput("");
+        setAddressInput("");
+
+        //chuyen toi historyPage
+        dispatch({ type: "HISTORY_ACTIVE" });
+        navigate("/history");
+        alert("Checkout Success !!!");
+      })
+      .catch((error) => console.error(error));
   };
+
+  //kiem tra form input:
+  let isValidate = false;
+  if (
+    phoneInput.trim() !== "" &&
+    addressInput.trim() !== "" &&
+    orderList.length > 0
+  ) {
+    isValidate = true;
+  }
+
   return (
     <div>
       <div className="container">
@@ -75,8 +113,8 @@ const CheckoutPage = () => {
               <div className="form-group">
                 <label htmlFor="nameInput">FULL NAME:</label>
                 <input
-                  value={nameInput}
-                  onChange={nameChange}
+                  value={user.username}
+                  readOnly
                   type="text"
                   className="form-control"
                   id="nameInput"
@@ -86,8 +124,8 @@ const CheckoutPage = () => {
               <div className="form-group">
                 <label htmlFor="emailInput">Email:</label>
                 <input
-                  value={emailInput}
-                  onChange={emailChange}
+                  value={user.email}
+                  readOnly
                   type="email"
                   className="form-control"
                   id="emailInput"
@@ -116,7 +154,9 @@ const CheckoutPage = () => {
                   placeholder="Enter Your Address Here!"
                 ></input>
               </div>
-              <button>Place order</button>
+              <button className="btn-order" disabled={!isValidate}>
+                Place order
+              </button>
             </form>
           </div>
           <div className="col-5">

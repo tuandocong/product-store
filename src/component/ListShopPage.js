@@ -34,8 +34,8 @@ const ListShopPage = (props) => {
   //chuyển trang khi nhấn vào sản phẩm (detail/id):
   const navigate = useNavigate();
   const itemClickHandler = (e) => {
-    console.log(e["_id"]["$oid"]);
-    navigate(`/detail/${e["_id"]["$oid"]}`);
+    console.log(e["_id"]);
+    navigate(`/detail/${e["_id"]}`);
   };
 
   return (

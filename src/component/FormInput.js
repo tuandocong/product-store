@@ -81,30 +81,39 @@ const FormInput = () => {
 
       // update LocalStorage
       localStorage.setItem("userArr", JSON.stringify(newArr));
-      
     } else {
-      //-------------------------------------------khi click button SIGN IN(dang nhap):
-      const userArr = localStorage.getItem("userArr")
-        ? JSON.parse(localStorage.getItem("userArr"))
-        : [];
-      // tìm user đăng nhập phù hợp?
-      const findUser = userArr.find((user) => {
-        return user.email === emailInput && user.password === passwordInput;
+      //---------khi click button SIGN IN(dang nhap): ----------
+
+      const myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+
+      const raw = JSON.stringify({
+        email: emailInput,
+        password: passwordInput,
       });
-      if (findUser) {
-        // có user phù hợp:
-        localStorage.setItem("curUser", JSON.stringify(findUser));
-        dispatch({ type: "ON_LOGIN" });
-        dispatch({ type: "HOME_ACTIVE" });
-        navigate("/");
-        alert("LOGIN Thanh cong!!!");
-      } else {
-        // ko có user phù hợp:
-        alert("khong co user thoa man ?");
-        setPasswordInput("");
-      }
+
+      const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+      };
+
+      fetch(`${process.env.REACT_APP_API_URL}/auth/login`, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          localStorage.setItem("curUser", JSON.stringify(result.user));
+          localStorage.setItem("token", JSON.stringify(result.token));
+
+          dispatch({ type: "ON_LOGIN" });
+          dispatch({ type: "HOME_ACTIVE" });
+          navigate("/");
+          alert("LOGIN Thanh cong!!!");
+        })
+        .catch((error) => console.error(error));
     }
   };
+
   //------------Ham thay doi SIGN IN/UP:
   const changStateHandler = () => {
     isValidate = false;

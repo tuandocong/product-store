@@ -1,7 +1,9 @@
 .product {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
+  overflow: auto;
 }
+
 .price {
   color: rgb(154, 154, 154);
   font-size: 15px;

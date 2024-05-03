@@ -5,15 +5,21 @@ import imgIpad from "../img/product_3.png";
 import imgWatch from "../img/product_4.png";
 import imgAirPods from "../img/product_5.png";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 const Categories = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const user = useSelector((state) => state.loginPage.user);
   // chuyển trang ShopPage:
   const goToShopHandler = () => {
-    dispatch({ type: "SHOP_ACTIVE" });
-    navigate("/shop");
+    if (Object.values(user).length === 0) {
+      dispatch({ type: "LOGIN_ACTIVE" });
+      navigate("/login");
+    } else {
+      dispatch({ type: "SHOP_ACTIVE" });
+      navigate("/shop");
+    }
   };
 
   return (
